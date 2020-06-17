@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <header>
+        <%- include("partials/header"); -%>
+    </header>
+    <div class="container">
+        <h1>Home</h1>
+        <p><%= homeStartingContent %></p>
+        <% posts.map(post=>{ %>
+            <h1><%= post.title %></h1>
+            <% if (post.body.length > 100) { %>
+            <p><%= post.body.substring(0, 100) + "..." %><br></br><a href="/posts/<%= post.title %>">Read more</a></p>
+            <% }else { %>
+            <p><%= post.body %><br></br><a href="/posts/<%= post.title %>">Read more</a></p>
+            
+        <% }}) %>
+    </div>
+    <footer>
+        <%- include("partials/footer"); -%>
+    </footer>
+</body>
+</html>
