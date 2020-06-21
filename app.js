@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const _ = require("lodash");
+const mongoose = require("mongoose");
 
 
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -16,23 +17,33 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-const posts = [
-  {
-    title: "New Post",
-    body:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    title: "Another Post",
-    body:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-];
+mongoose.connect("mongodb://localhost:27017/blogpost", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
+const blogSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "A blog post must have a title"],
+  },
+  body: {
+    type: String,
+    required: [true, "A blog post contains a body"],
+  },
+});
 
+const Post = mongoose.model("Post", blogSchema);
 
 app.get("/",(req,res)=>{
-  res.render("home", { homeStartingContent: homeStartingContent , posts: posts});
+
+  Post.find({},(err,posts)=>{
+    if(err){
+      console.log("error: ",err);
+    }else{
+  res.render("home", { homeStartingContent: homeStartingContent, posts: posts });
+    }
+  })
 
 })
 
@@ -49,24 +60,27 @@ app.get("/compose", (req, res) => {
 });
 
 app.post("/compose", (req, res) => {
-  const post = {
+  const post = new Post({
     title: req.body.postTitle,
     body: req.body.postBody
-  }
-  posts.push(post)
-  res.redirect("/")
+  })
+  post.save((err) => {
+    if (!err) {
+      res.redirect("/");
+    }
+  });
 });
 
-app.get("/posts/:post",(req,res)=>{
-  if(posts.length){
-    posts.forEach(
-      post => {
-        if (_.lowerCase(post.title) == _.lowerCase(req.params.post)) {
-          res.render("post", { title: post.title, body: post.body });
-        }
+app.get("/posts/:postId",(req,res)=>{
+    Post.findOne({_id:req.params.postId}, (err, post) => {
+      if (err) {
+        console.log("error: ", err);
+      } else {
+          if (post) {
+            res.render("post", { title: post.title, body: post.body });
+          }
       }
-    )
-  }
+    });
 });
 
 

@@ -15,9 +15,9 @@
         <% posts.map(post=>{ %>
             <h1><%= post.title %></h1>
             <% if (post.body.length > 100) { %>
-            <p><%= post.body.substring(0, 100) + "..." %><br></br><a href="/posts/<%= post.title %>">Read more</a></p>
+            <p><%= post.body.substring(0, 100) + "..." %></p>
             <% }else { %>
-            <p><%= post.body %><br></br><a href="/posts/<%= post.title %>">Read more</a></p>
+            <p><%= post.body %><br></br><a href="/posts/<%= post._id %>">Read more</a></p>
             
         <% }}) %>
     </div>
